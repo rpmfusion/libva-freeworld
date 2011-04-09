@@ -1,5 +1,5 @@
 Name:		libva-freeworld
-Version:	1.0.10
+Version:	1.0.12
 Release:	1%{?dist}
 Summary:	Video Acceleration (VA) API for Linux
 Group:		System Environment/Libraries
@@ -7,7 +7,6 @@ License:	MIT
 URL:		http://freedesktop.org/wiki/Software/vaapi
 Source0:	http://cgit.freedesktop.org/libva/snapshot/libva-%{version}.tar.bz2
 Patch0:		101_dont_install_test_programs.patch
-Patch1:         libva-1.0.10-20110310.patch
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:	libtool
 BuildRequires:	libudev-devel
@@ -25,7 +24,7 @@ Libva-freeworld is a library providing the VA API video acceleration API.
 %prep
 %setup -q -n libva-%{version}
 %patch0 -p1 -b .testprogs
-%patch1 -p1 -b .git
+
 
 %build
 autoreconf -i
@@ -55,6 +54,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sun Apr 10 2011 Nicolas Chauvet <kwizart@gmail.com> - 1.0.12-1
+- Update to 1.0.12
+
 * Thu Mar 10 2011 Nicolas Chauvet <kwizart@gmail.com> - 1.0.10-1
 - Switch to additional package using the freedesktop version
 - Add git rev from today as patch
