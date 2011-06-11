@@ -1,6 +1,6 @@
 Name:		libva-freeworld
 Version:	1.0.13
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	Video Acceleration (VA) API for Linux
 Group:		System Environment/Libraries
 License:	MIT
@@ -17,7 +17,8 @@ BuildRequires:	mesa-libGL-devel
 # owns the %{_libdir}/dri directory
 Requires:	mesa-dri-drivers
 
-%{?with_full: Conflicts: libva <= %{version} }
+%{?with_full:Conflicts: libva <= %{version}}
+%{!?with_full:Requires: libva%{_isa} >= %{version}}
 
 %description
 Libva-freeworld is a library providing the VA API video acceleration API.
@@ -51,12 +52,16 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root,-)
 %doc COPYING
-%{?with_full:%exclude} %{_libdir}/libva*.so*
+%{!?with_full:%exclude} %{_libdir}/libva*.so*
 %exclude %{_libdir}/dri/dummy_drv_video.so
 %{_libdir}/dri/i965_drv_video.so
 
 
 %changelog
+* Sat Jun 11 2011 Nicolas Chauvet <kwizart@gmail.com> - 1.0.13-2
+- Fix typo when building --with full
+- Requires at least the same libva version.
+
 * Wed Jun 08 2011 Nicolas Chauvet <kwizart@gmail.com> - 1.0.13-1
 - Update to 1.0.13
 
