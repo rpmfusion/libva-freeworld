@@ -9,7 +9,7 @@ Name:		libva-freeworld
 # version of the real upstream libva; when the real upstream 0.5 comes
 # out we will no longer need to use Gwenole's patched version of 0.3
 Version:	0.31.1
-Release:	1.sds%{sdsver}%{?dist}
+Release:	2.sds%{sdsver}%{?dist}
 Summary:	Video Acceleration (VA) API for Linux
 Group:		System Environment/Libraries
 License:	MIT
@@ -25,8 +25,6 @@ BuildRequires:	mesa-libGL-devel
 
 Provides:	libva = %{version}-%{release}
 Obsoletes:	libva < 0.31.1
-Provides:	libva-utils = 0.31.1
-Obsoletes:	libva-utils < 0.31.1
 
 %description
 Libva is a library providing the VA API video acceleration API.
@@ -42,6 +40,18 @@ Obsoletes:	libva-devel < 0.31.1
 %description	devel
 The %{name}-devel package contains libraries and header files for
 developing applications that use %{name}.
+
+%package	utils
+Summary:	Tools for %{name} (including vainfo)
+Group:		Development/Libraries
+Requires:	%{name} = %{version}-%{release}
+Provides:	libva-utils = 0.31.1
+Obsoletes:	libva-utils < 0.31.1
+
+%description	utils
+The %{name}-utils package contains tools that are provided as part
+of %{name}, including the vainfo tool for determining what (if any)
+%{name} support is available on a system.
 
 
 %prep
@@ -71,6 +81,9 @@ rm -rf %{buildroot}
 %doc COPYING
 %{_libdir}/libva*.so.*
 %{_libdir}/va
+
+%files utils
+%defattr(-,root,root,-)
 %{_bindir}/vainfo
 
 %files devel
@@ -81,6 +94,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Jul 11 2011 Nicolas Chauvet <kwizart@gmail.com> - 0.31.1-2.sds4
+- Split utils - multilibs compliance
+
 * Fri Jul 16 2010 Nicolas Chauvet <kwizart@gmail.com> - 0.31.1-1.sds4
 - Update to 0.31.1-1+sds4
 - Add BR libudev-devel
