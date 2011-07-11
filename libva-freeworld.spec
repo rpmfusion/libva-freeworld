@@ -1,32 +1,52 @@
+%global apiver	0.31
+%global sver	%{apiver}.1
+%global sdsver	4
+%global uver	%{sver}-1+sds%{sdsver}
+
+
 Name:		libva-freeworld
-Version:	1.0.13
-Release:	2%{?dist}
+# The rather complex versioning is due to the upstream being a patched
+# version of the real upstream libva; when the real upstream 0.5 comes
+# out we will no longer need to use Gwenole's patched version of 0.3
+Version:	0.31.1
+Release:	1.sds%{sdsver}%{?dist}
 Summary:	Video Acceleration (VA) API for Linux
 Group:		System Environment/Libraries
 License:	MIT
-URL:		http://freedesktop.org/wiki/Software/vaapi
-Source0:	http://cgit.freedesktop.org/libva/snapshot/libva-%{version}.tar.bz2
+URL:		http://www.splitted-desktop.com/~gbeauchesne/libva/
+Source0:	http://www.splitted-desktop.com/~gbeauchesne/libva/libva_%{uver}.tar.gz
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:	libtool
 BuildRequires:	libudev-devel
 BuildRequires:	libXext-devel
 BuildRequires:	libXfixes-devel
-BuildRequires:	libdrm-devel >= 2.4.24
-BuildRequires:  libpciaccess-devel
+BuildRequires:	libdrm-devel
 BuildRequires:	mesa-libGL-devel
-# owns the %{_libdir}/dri directory
-Requires:	mesa-dri-drivers
 
-%{?with_full:Conflicts: libva <= %{version}}
-%{!?with_full:Requires: libva%{_isa} >= %{version}}
+Provides:	libva = %{version}-%{release}
+Obsoletes:	libva < 0.31.1
+Provides:	libva-utils = 0.31.1
+Obsoletes:	libva-utils < 0.31.1
 
 %description
-Libva-freeworld is a library providing the VA API video acceleration API.
+Libva is a library providing the VA API video acceleration API.
+
+%package	devel
+Summary:	Development files for %{name}
+Group:		Development/Libraries
+Requires:	%{name} = %{version}-%{release}
+Requires:	pkgconfig
+Provides:	libva-devel = %{version}-%{release}
+Obsoletes:	libva-devel < 0.31.1
+
+%description	devel
+The %{name}-devel package contains libraries and header files for
+developing applications that use %{name}.
 
 
 %prep
-%setup -q -n libva-%{version}
-
+%setup -q -n libva-%{sver}
+for p in debian/patches/*.patch; do patch -p1 < $p; done
 
 %build
 autoreconf -i
@@ -36,11 +56,8 @@ make %{?_smp_mflags}
 %install
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot} INSTALL="install -p"
-find %{buildroot} -regex ".*\.la$" | xargs rm -f --
-rm -rf %{buildroot}%{_includedir}
-rm -rf %{buildroot}%{_libdir}/pkgconfig
-rm -rf %{buildroot}%{_bindir}
 
+find %{buildroot} -regex ".*\.la$" | xargs rm -f --
 
 
 %clean
@@ -52,47 +69,125 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root,-)
 %doc COPYING
-%{!?with_full:%exclude} %{_libdir}/libva*.so*
-%exclude %{_libdir}/dri/dummy_drv_video.so
-%{_libdir}/dri/i965_drv_video.so
+%{_libdir}/libva*.so.*
+%{_libdir}/va
+%{_bindir}/vainfo
+
+%files devel
+%defattr(-,root,root,-)
+%{_includedir}/va
+%{_libdir}/libva*.so
+%{_libdir}/pkgconfig/libva*.pc
 
 
 %changelog
-* Sat Jun 11 2011 Nicolas Chauvet <kwizart@gmail.com> - 1.0.13-2
-- Fix typo when building --with full
-- Requires at least the same libva version.
+* Fri Jul 16 2010 Nicolas Chauvet <kwizart@gmail.com> - 0.31.1-1.sds4
+- Update to 0.31.1-1+sds4
+- Add BR libudev-devel
+- Obsoletes libva-utils 
+  (tests files aren't installed anymore).
 
-* Wed Jun 08 2011 Nicolas Chauvet <kwizart@gmail.com> - 1.0.13-1
-- Update to 1.0.13
+* Fri Jul 16 2010 Nicolas Chauvet <kwizart@gmail.com> - 0.31.0.1.sds13-3
+- Revert to the previous version scheme
+- Fix mix use of spaces and tabs
 
-* Sun Apr 10 2011 Nicolas Chauvet <kwizart@gmail.com> - 1.0.12-1
-- Update to 1.0.12
+* Wed Jul 14 2010 Nicolas Chauvet <kwizart@gmail.com> - 0.31.0-1.sds13
+- Move to libva-freeworld
+- Virtual provides libva bumped with epoch
+- Remove duplicate licence file.
 
-* Thu Mar 10 2011 Nicolas Chauvet <kwizart@gmail.com> - 1.0.10-1
-- Switch to additional package using the freedesktop version
-- Add git rev from today as patch
+* Mon Jul 05 2010 Nicolas Chauvet <kwizart@gmail.com> - 0.31.0.1.sds130-1
+- Update to 0.31.0-1+sds13
 
-* Mon Feb 21 2011 Nicolas Chauvet <kwizart@gmail.com> - 1.0.10-1
-- Update to 1.0.10
+* Fri Mar 12 2010 Adam Williamson <awilliam@redhat.com> - 0.31.0.1.sds10-1
+- new SDS patch version (sds10):
+	+ Add detection of Broadcom Crystal HD chip.
+	+ Require vaDriverInit() function to include SDS API version. 
+	+ OpenGL extensions updates:
+		- Drop the 'bind' API. Only keep vaCopySurfaceGLX().
+		- Fix FBO check for the generic implementation with TFP.
+	+ Compat: strip vaPutSurface() flags to match older API.
+		- This fixes deinterlacing support with GMA500 "psb" driver.
+	+ Upgrade to GIT snapshot 2009/12/17:
+		- Add a "magic" number to VADisplayContext.
+		- Add more test programs, including h264 encoding.
+- add -utils package for the various new binaries in this build
 
-* Tue Jan 25 2011 Adam Williamson <awilliam@redhat.com> - 1.0.8-1
-- bump to new version
-- fix modded tarball to actually not have i965 dir
-- merge with the other spec I seem to have lying around somewhere
+* Thu Dec 3 2009 Adam Williamson <awilliam@redhat.com> - 0.31.0.1.sds9-1
+- new SDS patch version (sds9):
+	+ Add extra picture info for VDPAU/MPEG-4
 
-* Wed Nov 24 2010 Adam Williamson <awilliam@redhat.com> - 1.0.6-1
-- switch to upstream from sds branch (sds now isn't carrying any very
-  interesting changes according to gwenole)
-- pull in the dont-install-test-programs patch from sds
-- split out libva-utils again for multilib purposes
-- drop -devel package obsolete/provides itself too
+* Mon Nov 23 2009 Adam Williamson <awilliam@redhat.com> - 0.31.0.1.sds8-1
+- new SDS patch version (sds8) - note sds7 package actually contained
+  sds5 due to an error on my part:
+	+ Fix detection of ATI chipsets with fglrx >= 8.69-Beta1.
+	+ Upgrade to GIT snapshot 2009/11/20:
+	  + Merge in some G45 fixes and additions.
+	  + Add VA_STATUS_ERROR_SURFACE_IN_DISPLAYING.
 
-* Tue Nov 23 2010 Adam Williamson <awilliam@redhat.com> - 0.31.1-3.sds4
-- drop obsoletes and provides of itself (hangover from freeworld)
+* Tue Nov 17 2009 Adam Williamson <awilliam@redhat.com> - 0.31.0.1.sds7-1
+- new SDS patch version:
+	+ Fix compatibility with older programs linked against libva.so.0
+	+ G45 updates:
+	  + Fix vaCreateImage() and vaDestroyImage()
+	  + Fix subpictures association to parent surfaces
+	  + Fix rendering of subpictures (extra level of scaling)
+	  + Fix subpicture palette upload (IA44 and AI44 formats for now)
+	  + Add RGBA subpicture formats
+	  + Add YV12 vaGetImage() and vaPutImage()
+	  + Fix subpicture rendering (flickering)
+	  + Fix return value for unimplemented functions
+	  + Fix vaPutSurface() to handle cliprects (up to 80)
 
-* Tue Nov 23 2010 Adam Williamson <awilliam@redhat.com> - 0.31.1-2.sds4
-- fix the tarball to actually remove the i965 code (duh)
 
-* Thu Oct 7 2010 Adam Williamson <awilliam@redhat.com> - 0.31.1-1.sds4
-- initial package (based on package from elsewhere by myself and Nic
-  Chauvet with i965 driver removed)
+* Thu Oct 8 2009 Adam Williamson <awilliam@redhat.com> - 0.31.0.1.sds5-2
+- enable the i965 driver build
+
+* Tue Oct 6 2009 Adam Williamson <awilliam@redhat.com> - 0.31.0.1.sds5-1
+- new SDS patch version:
+	+ G45 updates:
+	+ Fix VA driver version
+	+ Fix vaAssociateSubpicture() arguments
+	+ Add vaQueryDisplayAttributes() as a no-op
+	+ Fix vaQueryImageFormats() to return 0 formats at this time
+
+* Tue Sep 22 2009 Adam Williamson <awilliam@redhat.com> - 0.31.0.1.sds4-1
+- new SDS patch version:
+	+ Fix chek for GLX extensions
+	+ Fix libva pkgconfig dependencies
+	+ Fix vainfo dependencies (Konstantin Pavlov)
+	+ Add C++ guards to <va/va_glx.h>
+	+ Don't search LIBGL_DRIVERS_PATH, stick to extra LIBVA_DRIVERS_PATH
+	+ Upgrade to GIT snapshot 2009/09/22:
+		- Merge in SDS patches 001, 201, 202
+		- i965_drv_driver: use the horizontal position of a slice
+
+* Thu Sep 10 2009 Adam Williamson <awilliam@redhat.com> - 0.31.0.1.sds3-1
+- new upstream + SDS patch version:
+	+ Add OpenGL extensions (v3)
+	+ Upgrade to VA API version 0.31 (2009/09/07 snapshot)
+	+ Add drmOpenOnce() / drmCloseOnce() replacements for libdrm < 2.3
+	+ Add generic VA/GLX implementation with TFP and FBO
+	+ Fix detection of ATI chipsets with fglrx >= 8.66-RC1
+	+ Add VASliceParameterBufferMPEG2.slice_horizontal_position for i965 
+	  driver
+
+* Thu Sep 3 2009 Adam Williamson <awilliam@redhat.com> - 0.30.4.1.sds5-3
+- don't declare the stack as executable when creating libva.so.0
+
+* Mon Aug 31 2009 Adam Williamson <awilliam@redhat.com> - 0.30.4.1.sds5-2
+- enable glx support
+
+* Mon Aug 31 2009 Adam Williamson <awilliam@redhat.com> - 0.30.4.1.sds5-1
+- new SDS patch version:
+	+ Add VA_STATUS_ERROR_UNIMPLEMENTED
+	+ Add vaBindSurfaceToTextureGLX() and vaReleaseSurfaceFromTextureGLX()
+
+* Wed Aug 26 2009 Adam Williamson <awilliam@redhat.com> - 0.30.4.1.sds4-1
+- new SDS patch version:
+	+ Add OpenGL extensions
+	+ Fix NVIDIA driver version check
+	+ Fix libva-x11-VERSION.so.* build dependencies
+
+* Wed Aug 12 2009 Adam Williamson <awilliam@redhat.com> - 0.30.4.1.sds3-1
+- initial package
