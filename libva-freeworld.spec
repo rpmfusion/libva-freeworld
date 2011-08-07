@@ -1,6 +1,6 @@
 Name:		libva-freeworld
-Version:	1.0.13
-Release:	2%{?dist}
+Version:	1.0.14
+Release:	1%{?dist}
 Summary:	Video Acceleration (VA) API for Linux
 Group:		System Environment/Libraries
 License:	MIT
@@ -11,7 +11,7 @@ BuildRequires:	libtool
 BuildRequires:	libudev-devel
 BuildRequires:	libXext-devel
 BuildRequires:	libXfixes-devel
-BuildRequires:	libdrm-devel >= 2.4.24
+BuildRequires:	libdrm-devel >= 2.4.23
 BuildRequires:  libpciaccess-devel
 BuildRequires:	mesa-libGL-devel
 # owns the %{_libdir}/dri directory
@@ -58,6 +58,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sun Aug 07 2011 Nicolas Chauvet <kwizart@gmail.com> - 1.0.14-1
+- Update to 1.0.14
+
 * Sat Jun 11 2011 Nicolas Chauvet <kwizart@gmail.com> - 1.0.13-2
 - Fix typo when building --with full
 - Requires at least the same libva version.
