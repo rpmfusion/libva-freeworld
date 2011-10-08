@@ -9,7 +9,7 @@ Name:		libva-freeworld
 # version of the real upstream libva; when the real upstream 0.5 comes
 # out we will no longer need to use Gwenole's patched version of 0.3
 Version:	0.31.1
-Release:	2.sds%{sdsver}%{?dist}
+Release:	2.sds%{sdsver}%{?dist}.1
 Summary:	Video Acceleration (VA) API for Linux
 Group:		System Environment/Libraries
 License:	MIT
@@ -94,6 +94,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sat Oct 08 2011 Nicolas Chauvet <kwizart@gmail.com> - 0.31.1-2.sds4.1
+- Rebuilt for target i686
+
 * Mon Jul 11 2011 Nicolas Chauvet <kwizart@gmail.com> - 0.31.1-2.sds4
 - Split utils - multilibs compliance
 
